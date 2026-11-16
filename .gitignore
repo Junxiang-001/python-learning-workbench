@@ -1,0 +1,17 @@
+# 依赖与构建产物（本项目零构建，预留）
+node_modules/
+
+# 系统与编辑器垃圾
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+
+# DSH 与技能运行状态（非项目源码）
+.dsh-project-memory/
+.impeccable/
+
+# 临时与缓存文件
+*.log
+*.tmp
+__pycache__/

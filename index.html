@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f2efe8">
+<title>Python 学习工作台</title>
+<link rel="stylesheet" href="style.css?v=20261107a">
+<link rel="stylesheet" href="enhancements.css?v=20261107a">
+<link rel="stylesheet" href="dashboard-refresh.css?v=20261107a">
+<link rel="stylesheet" href="theme.css?v=20261107a">
+</head>
+<body>
+<!-- 首次访问欢迎 -->
+<div id="welcomeModal" class="welcome-modal" hidden>
+  <div class="welcome-content">
+    <div class="welcome-icon" aria-hidden="true">Py</div>
+    <h2>这是一个工作台，不是一门课</h2>
+    <p>零基础也能用。它默认一件事：你要做出一个具体的小东西，而不是「把 Python 学完」。</p>
+    <div class="welcome-features">
+      <div class="feature">
+        <span class="feature-icon" aria-hidden="true">01</span>
+        <h3>今天跑通一件事</h3>
+        <p>一个能运行的最小闭环，胜过十个精致的一半。</p>
+      </div>
+      <div class="feature">
+        <span class="feature-icon" aria-hidden="true">02</span>
+        <h3>练习场真跑代码</h3>
+        <p>浏览器里真的执行、真的报错，不是拿正则猜你写对没有。</p>
+      </div>
+      <div class="feature">
+        <span class="feature-icon" aria-hidden="true">03</span>
+        <h3>今日复习</h3>
+        <p>先自己想再看答案，按遗忘曲线安排下一次。</p>
+      </div>
+      <div class="feature">
+        <span class="feature-icon" aria-hidden="true">04</span>
+        <h3>元信息可查</h3>
+        <p>路线、速查表、环境指南、番茄钟，缺什么查什么。</p>
+      </div>
+    </div>
+    <button id="welcomeStart" class="btn accent big">开始</button>
+    <button id="welcomeSkip" class="btn">先自己看看</button>
+  </div>
+</div>
+
+<a class="skip-link" href="#main">跳到主要内容</a>
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">Py</span>
+    <div class="brand-text">
+      <h1>Python 学习工作台</h1>
+      <p class="brand-sub">零基础 · 今天只做一小步</p>
+    </div>
+  </div>
+  <nav class="tabs" aria-label="功能导航">
+    <button class="tab active" data-view="dashboard" aria-current="page">首页</button>
+    <button class="tab" data-view="review">复习<span class="tab-badge" data-review-badge hidden></span></button>
+    <button class="tab" data-view="practice">练习场</button>
+    <button class="tab" data-view="map">思维导图</button>
+    <button class="tab" data-view="notes">章节笔记</button>
+    <button class="tab" data-view="path">学习路线</button>
+    <button class="tab" data-view="cheats">速查表</button>
+    <button class="tab" data-view="pomodoro">番茄钟</button>
+    <button class="tab" data-view="env">环境指南</button>
+    <button class="tab" data-view="links">资源导航</button>
+    <button class="tab" data-view="achieve">成就墙</button>
+    <button class="tab" data-view="method">方法</button>
+  </nav>
+  <div class="topbar-right">
+    <button id="levelBadge" class="level-badge" aria-label="查看等级与成就">
+      <span class="level-title">编程萌新</span>
+      <span class="level-xp">0 XP</span>
+    </button>
+    <span id="streakBadge" class="streak" aria-label="连续学习天数">—</span>
+    <button id="darkModeToggle" aria-label="切换深色/浅色模式">◐</button>
+    <button id="exportBtn" class="btn ghost" aria-label="导出全部笔记与进度为 JSON 备份">导出</button>
+    <button id="importBtn" class="btn ghost" aria-label="从 JSON 备份恢复">导入</button>
+    <input type="file" id="importFile" accept=".json" hidden aria-label="选择备份文件">
+  </div>
+</header>
+
+<main id="main">
+  <!-- ============ 学习仪表盘 ============ -->
+  <section id="view-dashboard" class="view active" aria-label="学习仪表盘">
+    <div class="dashboard-grid">
+      <!-- 欢迎卡片 -->
+      <div class="dash-card welcome-card">
+        <h2 id="dashGreeting">欢迎回来，今天学一点 Python</h2>
+        <p id="dashMotivation" class="motivation-text">先完成一道小练习，再决定下一步。</p>
+      </div>
+
+      <!-- 统计卡片 -->
+      <div class="dash-card stats-card">
+        <h3>学习概览</h3>
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-value" id="dashTotalChapters">0</div>
+            <div class="stat-label">已完成章节</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="dashTotalNotes">0</div>
+            <div class="stat-label">学习笔记</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="dashStreak">0</div>
+            <div class="stat-label">连续打卡</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="dashAchievements">0</div>
+            <div class="stat-label">解锁成就</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 等级进度卡片 -->
+      <div class="dash-card level-card">
+        <h3>当前等级</h3>
+        <div class="level-display">
+          <div class="level-emoji" id="dashLevelEmoji" aria-hidden="true">🥚</div>
+          <div class="level-info">
+            <div class="level-name" id="dashLevelName">编程萌新</div>
+            <div class="level-xp-text" id="dashLevelXP">0 / 30 XP</div>
+          </div>
+        </div>
+        <div class="xp-bar-container">
+          <div class="xp-bar">
+            <div id="dashXPFill" class="xp-bar-fill" style="width: 0%"></div>
+          </div>
+          <div class="xp-bar-label" id="dashXPPercent">0%</div>
+        </div>
+        <div class="next-level-hint" id="dashNextLevel">距离「语法学徒」还差 30 XP</div>
+      </div>
+
+      <!-- 学习建议卡片 -->
+      <div class="dash-card suggestion-card">
+        <h3>今天做这个</h3>
+        <div id="dashSuggestion" class="suggestion-box">
+          <div class="suggestion-icon" aria-hidden="true">→</div>
+          <div class="suggestion-content">
+            <h4 class="suggestion-title">开始第一章</h4>
+            <p class="suggestion-desc">从「基础入门」开始，打好基础</p>
+            <button class="btn accent btn-suggestion" id="dashSuggestionBtn">立即开始</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 快速操作卡片 -->
+      <div class="dash-card actions-card">
+        <h3>快速入口</h3>
+        <div class="quick-actions">
+          <button class="action-btn" data-view="review">
+            <svg class="action-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3.2-6.9"/><path d="M3 4v5h5"/></svg>
+            <div class="action-label">今日复习</div>
+          </button>
+          <button class="action-btn" data-view="practice">
+            <svg class="action-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4.5v15l12-7.5-12-7.5z"/></svg>
+            <div class="action-label">写代码</div>
+          </button>
+          <button class="action-btn" data-view="map">
+            <svg class="action-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="1"/><path d="M9.5 3.5v17M14.5 3.5v17M3.5 9.5h17M3.5 14.5h17"/></svg>
+            <div class="action-label">知识地图</div>
+          </button>
+          <button class="action-btn" data-view="pomodoro">
+            <svg class="action-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
+            <div class="action-label">番茄钟</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- 最近成就卡片 -->
+      <div class="dash-card achievements-preview-card">
+        <div class="card-header-row">
+          <h3>最近成就</h3>
+          <button class="btn-link" data-view="achieve">查看全部 →</button>
+        </div>
+        <div id="dashRecentAchievements" class="recent-achievements-list">
+          <div class="no-achievements-hint">完成学习任务即可解锁成就！</div>
+        </div>
+      </div>
+
+      <!-- 学习统计图表 -->
+      <div class="dash-card dashboard-chart-card full-width">
+        <h3>近 7 天学习时长</h3>
+        <canvas id="learningChart"></canvas>
+      </div>
+
+      <!-- 学习日历 -->
+      <div class="dash-card dashboard-chart-card">
+        <h3>打卡日历 · 最近 30 天</h3>
+        <div id="streakCalendar"></div>
+      </div>
+
+      <!-- 每日目标 -->
+      <div class="dash-card dashboard-chart-card">
+        <h3>今日目标</h3>
+        <div id="dailyGoalsContainer"></div>
+      </div>
+
+      <!-- 学习统计 -->
+      <div class="dash-card dashboard-chart-card full-width">
+        <h3>总体统计</h3>
+        <div id="enhancedStats"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 今日复习 ============ -->
+  <section id="view-review" class="view" aria-label="今日复习">
+    <div id="reviewApp" class="review-app">
+      <header class="rv-head">
+        <div>
+          <h2 class="view-title">今日复习</h2>
+          <p class="view-desc">先自己想，再看答案。这个顺序不能反——先看答案等于没复习。</p>
+        </div>
+        <div class="rv-stats" aria-live="polite">
+          <div class="rv-stat"><b id="rvDue">0</b><span>到期</span></div>
+          <div class="rv-stat"><b id="rvNew">0</b><span>新卡</span></div>
+          <div class="rv-stat"><b id="rvDone">0</b><span>今日已复习</span></div>
+        </div>
+      </header>
+
+      <div class="rv-stage">
+        <div class="rv-card" id="rvCard" hidden>
+          <div class="rv-card-meta">
+            <span id="rvCardCh">—</span>
+            <span id="rvCardIdx">—</span>
+          </div>
+          <p class="rv-question" id="rvFront"></p>
+          <textarea id="rvAnswer" spellcheck="false" placeholder="先把答案写在这里再说（写不出也可以直接看答案，但那样你会高估自己）"></textarea>
+          <div class="rv-actions">
+            <button class="btn accent" id="rvReveal" type="button">看答案</button>
+            <span class="meta">空格键 = 看答案 · 1/2/3 = 评价</span>
+          </div>
+          <div class="rv-back" id="rvBack" hidden>
+            <div class="rv-back-label">答案</div>
+            <p id="rvBackText"></p>
+            <div class="rv-grades">
+              <button data-grade="again" type="button">忘了<small>今天再来</small></button>
+              <button data-grade="hard" type="button">勉强<small id="rvHardHint">明天</small></button>
+              <button data-grade="good" type="button">熟了<small id="rvGoodHint">3 天后</small></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="rv-empty" id="rvEmpty" hidden></div>
+        <div class="rv-summary" id="rvSummary" hidden></div>
+      </div>
+
+      <p class="rv-foot">间隔重复的节奏：忘了 → 当天再来；勉强 → 1～2 天后；熟了 → 3 天、7 天、15 天这样拉长。答错的卡会更快回到你面前——这不是惩罚，是效率。一次复习里混着不同章节（交错），比一个章节连刷十张有用，虽然感觉更累。</p>
+    </div>
+  </section>
+
+  <!-- ============ Python 练习场 ============ -->
+  <section id="view-practice" class="view" aria-label="Python 练习场">
+    <div id="exerciseApp" class="exercise-app">
+      <header class="practice-head">
+        <div>
+          <h2 class="view-title">练习场</h2>
+          <p class="view-desc">写代码 → 真运行 → 看输出。错了会告诉你第几行、为什么错。</p>
+        </div>
+        <div class="practice-score">
+          <span id="exerciseProgress" aria-live="polite">通过 0/0</span>
+        </div>
+      </header>
+
+      <div class="practice-layout">
+        <aside class="practice-side" aria-label="题目列表">
+          <div class="side-label">题目 · 按章节</div>
+          <div id="exerciseList" class="exercise-list" role="list"></div>
+        </aside>
+
+        <div class="practice-main">
+          <div class="task-head">
+            <span id="exerciseLevel" class="level-chip">入门</span>
+            <h3 id="exerciseTitle">—</h3>
+            <p id="exerciseConcept" class="task-concept"></p>
+            <p id="exerciseSource" class="task-source" hidden></p>
+          </div>
+
+          <div class="task-brief">
+            <div>
+              <h4>要做什么</h4>
+              <p id="exercisePrompt"></p>
+            </div>
+            <div>
+              <h4>通过条件</h4>
+              <p id="exerciseCondition"></p>
+            </div>
+          </div>
+
+          <div class="editor-wrap">
+            <div class="editor-bar">
+              <span>main.py</span>
+              <div class="editor-actions">
+                <button id="exerciseHint" class="btn small" type="button">给点提示</button>
+                <button id="exerciseSolution" class="btn small" type="button">看答案</button>
+                <button id="exerciseReset" class="btn small" type="button">还原</button>
+              </div>
+            </div>
+            <textarea id="exerciseCode" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Python 代码编辑区"></textarea>
+          </div>
+
+          <div class="run-bar">
+            <button id="exerciseRun" class="btn accent" type="button">运行 ▶</button>
+            <span class="run-hint">Ctrl + Enter</span>
+          </div>
+
+          <div id="exerciseHintBox" class="hint-box" hidden></div>
+          <div id="exerciseResult" class="result-panel" role="status" aria-live="polite" hidden></div>
+          <div id="exerciseSelfCheck" class="self-check" hidden></div>
+          <div id="exerciseSolutionBox" class="solution-box" hidden></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 思维导图 ============ -->
+  <section id="view-map" class="view" aria-label="Python 知识思维导图">
+    <div id="dailyFact" class="daily-fact">
+      <span class="fact-label">今日冷知识</span>
+      <span class="fact-text">Python 的名字来自喜剧团「蒙提·派森」，不是蟒蛇。Guido 当年正在追他们的剧。</span>
+      <button id="factNext" class="btn ghost small" aria-label="换一条冷知识">换一条</button>
+    </div>
+    <div class="map-toolbar">
+      <div class="map-search">
+        <input type="search" id="mapSearch" placeholder="搜索知识点，如：切片、列表推导式…" autocomplete="off" aria-label="搜索知识点">
+        <span id="mapSearchCount" class="search-count" aria-live="polite"></span>
+      </div>
+      <div class="map-actions">
+        <button class="btn" id="expandAll">全部展开</button>
+        <button class="btn" id="collapseAll">全部收起</button>
+        <button class="btn" id="expandL2">展开到二级</button>
+        <span class="toolbar-sep" aria-hidden="true"></span>
+        <button class="btn" id="zoomOut" aria-label="缩小">−</button>
+        <span id="zoomLabel" class="zoom-label">100%</span>
+        <button class="btn" id="zoomIn" aria-label="放大">+</button>
+        <button class="btn" id="zoomReset">重置</button>
+        <button class="btn accent" id="fitBtn">适应窗口</button>
+      </div>
+    </div>
+    <div id="mapCanvas" class="map-canvas" tabindex="0" aria-label="思维导图画布，可拖拽平移，滚轮缩放">
+      <div id="mapWorld" class="map-world"></div>
+    </div>
+    <aside id="nodePanel" class="node-panel" hidden aria-label="知识点详情">
+      <div class="node-panel-head">
+        <h2 id="npTitle">—</h2>
+        <button id="npClose" class="btn ghost" aria-label="关闭详情面板">×</button>
+      </div>
+      <div id="npBody" class="node-panel-body"></div>
+    </aside>
+    <p class="map-hint">点节点看讲解 · 点 <b>+/−</b> 圆点展开收起 · 拖拽空白处平移 · 滚轮缩放</p>
+  </section>
+
+  <!-- ============ 章节笔记 ============ -->
+  <section id="view-notes" class="view" aria-label="章节笔记">
+    <div class="notes-layout">
+      <aside class="chapter-list" aria-label="课程章节">
+        <div class="chapter-list-head">
+          <h2>课程章节</h2>
+          <span id="chapterProgress" class="chapter-progress"></span>
+        </div>
+        <ol id="chapterNav"></ol>
+      </aside>
+      <div class="note-editor">
+        <div class="note-head">
+          <div>
+            <h2 id="noteTitle">—</h2>
+            <p id="noteTopics" class="note-topics"></p>
+          </div>
+          <label class="done-toggle">
+            <input type="checkbox" id="chapterDone">
+            <span>本章已学完</span>
+          </label>
+        </div>
+        <div id="memoryPack" class="memory-pack"></div>
+        <div class="note-toolbar" role="toolbar" aria-label="笔记格式工具">
+          <button class="btn small" data-md="**" aria-label="加粗">B</button>
+          <button class="btn small" data-md="`" aria-label="行内代码">code</button>
+          <button class="btn small" data-block="```python&#10;&#10;```" aria-label="插入代码块">{ }</button>
+          <button class="btn small" data-line="- " aria-label="列表">• 列表</button>
+          <button class="btn small" data-line="## " aria-label="小标题">H2</button>
+          <button class="btn small" data-line="> " aria-label="引用">引用</button>
+          <button class="btn small" data-block="&#10;| 列1 | 列2 |&#10;| --- | --- |&#10;|  |  |&#10;" aria-label="表格">表格</button>
+          <span class="toolbar-sep" aria-hidden="true"></span>
+          <button class="btn small" id="togglePreview">预览</button>
+          <button class="btn small" id="downloadNote">下载 .md</button>
+        </div>
+        <div class="note-body">
+          <textarea id="noteArea" spellcheck="false" aria-label="笔记编辑区，支持 Markdown 语法" placeholder="在这里记笔记，支持 Markdown 语法…&#10;&#10;建议格式：&#10;## 今天学了什么&#10;## 代码练习&#10;## 踩过的坑&#10;## 还没弄懂的问题"></textarea>
+          <div id="notePreview" class="note-preview" hidden></div>
+        </div>
+        <div class="note-foot">
+          <span id="saveStatus" class="save-status" aria-live="polite">自动保存已开启</span>
+          <span id="wordCount" class="word-count"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 学习路线 ============ -->
+  <section id="view-path" class="view narrow" aria-label="学习路线">
+    <h2 class="view-title">从今天跑通，到做出自己的小工具</h2>
+    <p class="view-desc">按产出推进，不追求一次学完。每个阶段都有一个能运行、能复查的结果。</p>
+    <div id="pathStages"></div>
+    <div class="path-overall">
+      <span>总进度</span>
+      <div class="progress-track"><div id="pathBar" class="progress-fill"></div></div>
+      <span id="pathPct">0%</span>
+    </div>
+  </section>
+
+  <!-- ============ 速查表 ============ -->
+  <section id="view-cheats" class="view wide" aria-label="语法速查表">
+    <h2 class="view-title">语法速查表</h2>
+    <p class="view-desc">忘了怎么写就来这查。点右上角「复制」直接拿走代码。</p>
+    <input type="search" id="cheatSearch" class="wide-search" placeholder="过滤，如：字典、循环、文件…" autocomplete="off" aria-label="过滤速查条目">
+    <div id="cheatList"></div>
+  </section>
+
+  <!-- ============ 番茄钟 ============ -->
+  <section id="view-pomodoro" class="view narrow center" aria-label="番茄钟">
+    <h2 class="view-title">专注番茄钟</h2>
+    <p class="view-desc">25 分钟专注 + 5 分钟休息。学编程最忌一坐三小时然后三天不碰。</p>
+    <div class="pomo-card">
+      <div class="pomo-mode" id="pomoMode">专注</div>
+      <div class="pomo-time" id="pomoTime" role="timer" aria-live="off">25:00</div>
+      <div class="pomo-btns">
+        <button class="btn accent big" id="pomoStart">开始</button>
+        <button class="btn big" id="pomoReset">重置</button>
+        <button class="btn big" id="pomoSkip">跳过休息</button>
+      </div>
+      <div class="pomo-settings">
+        <label>专注 <input type="number" id="pomoWorkMin" min="5" max="90" value="25" aria-label="专注分钟数"> 分钟</label>
+        <label>休息 <input type="number" id="pomoBreakMin" min="1" max="30" value="5" aria-label="休息分钟数"> 分钟</label>
+      </div>
+      <p class="pomo-today">今日完成 <b id="pomoCount">0</b> 个番茄 · 累计专注 <b id="pomoTotal">0</b> 分钟</p>
+    </div>
+  </section>
+
+  <!-- ============ 环境指南 ============ -->
+  <section id="view-env" class="view wide" aria-label="环境搭建指南">
+    <h2 class="view-title">学代码除了 Python 还需要什么？</h2>
+    <p class="view-desc">小白最常见的困惑一次说清。你的电脑已装好 Python 3.14，下面按优先级来。</p>
+    <div id="envList"></div>
+  </section>
+
+  <!-- ============ 资源导航 ============ -->
+  <section id="view-links" class="view wide" aria-label="学习资源导航">
+    <h2 class="view-title">资源导航</h2>
+    <p class="view-desc">精选不贪多，每个都标了怎么用。</p>
+    <div id="linkGroups"></div>
+  </section>
+
+  <!-- ============ 成就墙 ============ -->
+  <section id="view-achieve" class="view wide" aria-label="成就墙">
+    <h2 class="view-title">成就墙</h2>
+    <p class="view-desc">记笔记、做练习、复习卡片、完成番茄都能拿经验值。成就只是记录，不是目的。</p>
+    <div id="achieveGrid" class="achieve-grid"></div>
+    <div class="xp-rules">
+      <h3>经验值规则</h3>
+      <ul>
+        <li>学完一章 +20 XP</li>
+        <li>写一篇像样的笔记（80 字以上）+10 XP</li>
+        <li>拆开一个记忆包 +5 XP</li>
+        <li>完成一个番茄钟 +8 XP</li>
+        <li>路线清单每勾一项 +5 XP</li>
+        <li>练习通过 +10 XP · 不看答案重写一遍通过 +15 XP</li>
+        <li>复习满 5 张卡 +6 XP</li>
+        <li>每天打卡 +3 XP</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ 方法 ============ -->
+  <section id="view-method" class="view narrow" aria-label="学习方法">
+    <h2 class="view-title">这个工作台为什么这么设计</h2>
+    <p class="view-desc">每一块界面背后都对应一条学得更快的方法。知道为什么，你才不会把它当成打卡游戏。</p>
+
+    <p class="method-tension"><b>先说一个绕不开的矛盾：</b>「最快」和「最牢」是要打架的。追求最快，很容易变成看了一堆视频感觉很懂、一动手全是空白。所以这里追求的「快」，是少走弯路的快，不是跳过必要时间的快。</p>
+
+    <div class="method-group-label">做事的五步</div>
+    <div class="method-list">
+      <article class="method-item">
+        <span class="method-num">01</span>
+        <h3>先定「用来做什么」，再定「学什么」</h3>
+        <p>「最有用」只来自这里。不要定「我要学 Python」，要定「两周后我要能写一个自动整理 Excel 的脚本，交给同事用」。目标必须是能交出去、会被检验的东西。没有这个，学习就是囤积，而囤积会给你一种很舒服的错觉。</p>
+        <p class="method-where"><b>在这个工作台里：</b>首页的「我要做出来的东西」；学习路线的每个阶段都绑定一个可交付产物。</p>
+      </article>
+      <article class="method-item">
+        <span class="method-num">02</span>
+        <h3>先跑通一个粗糙的完整闭环</h3>
+        <p>学语言先说出十句能用的句子，学编程先写出一个能跑的丑脚本。一整个流程哪怕粗糙，也胜过十个精致的一半。因为只有跑通了，你才知道哪个基础是真的在卡你；在那之前啃的书，八成用不上。</p>
+        <p class="method-where"><b>在这个工作台里：</b>学习路线的第一阶段就叫「今天跑通」；练习场第一题是 print，第十题是九九乘法表，中间没有一步是「先把语法看完」。</p>
+      </article>
+      <article class="method-item">
+        <span class="method-num">03</span>
+        <h3>用输出学，不用输入学</h3>
+        <p>看书、听课、看视频都是「识别」，识别会给你虚假的掌握感——大脑认得它的时候，会像已经会了一样舒服。真正留下的是「提取」：合上书复述一遍、给别人讲一遍、从空白写出代码。费曼技巧的本质就是这个。</p>
+        <p class="method-where"><b>在这个工作台里：</b>复习卡的正面永远是一个问题，答案藏在后面；练习场通过之后会反问你一句「不看答案能重写吗」——答「能」就把编辑区清空，写出第二遍才记「已掌握」。</p>
+      </article>
+      <article class="method-item">
+        <span class="method-num">04</span>
+        <h3>把反馈回路缩短到几分钟</h3>
+        <p>这是最被低估的变量。有编译器报错、有人当场纠正、有工具逐行指出问题，和「看完一本书、一个月后才用得上」相比，学习速度可能差一个数量级。反馈越慢，你就在错误的路上多积累一天。</p>
+        <p class="method-where"><b>在这个工作台里：</b>练习场内置了一个真的 Python 解释器，你的代码真的被执行，报错带行号和中文解释——不是拿正则猜你写对没有。</p>
+      </article>
+      <article class="method-item">
+        <span class="method-num">05</span>
+        <h3>在能力边缘上练</h3>
+        <p>太简单是重复，太难是挫败。要落在「努力一下能做成、但要费点劲」的位置。不舒服，但不痛苦。这也是为什么练习场有难度分级和渐进提示——卡住时先给你一级提示，而不是直接给答案。</p>
+        <p class="method-where"><b>在这个工作台里：</b>练习场分入门 / 进阶 / 挑战三档，每题有三层递进提示和参考答案（先自己写，卡住了再看）。</p>
+      </article>
+    </div>
+
+    <div class="method-group-label">在时间维度上的三条</div>
+    <div class="method-list">
+      <article class="method-item">
+        <span class="method-num">06</span>
+        <h3>分散，而不是集中</h3>
+        <p>同样练三小时，拆成六天每天半小时，胜过一天练完。遗忘不是敌人，是机制：在快要忘的时候想起来的，才真的被记住。所以复习要比学习更守时。</p>
+        <p class="method-where"><b>在这个工作台里：</b>「今日复习」按 3 天 → 7 天 → 15 天这样拉长间隔；答错的卡当天就会再出现一次。</p>
+      </article>
+      <article class="method-item">
+        <span class="method-num">07</span>
+        <h3>交错练习，别一个章节连刷</h3>
+        <p>把不同类型的题目混着做，比一类一类刷效果好——虽然感觉更差。因为混着做逼你先判断「这是哪一类问题」，而在真实场景里，判断题型本来就是一半的工作量。</p>
+        <p class="method-where"><b>在这个工作台里：</b>复习队列按章节轮转，相邻两张几乎不会来自同一章；练习场按课程章节排列、难度分三档，让你能跟着课程往前走，同时一眼看到自己处在哪一档。</p>
+      </article>
+      <article class="method-item">
+        <span class="method-num">08</span>
+        <h3>理解只要一次，自动化要几百次；建结构，别记碎片</h3>
+        <p>语言、编程、乐器、写作，瓶颈基本都不在「懂不懂」，而在「能不能不假思索地做出来」。这个阶段没有捷径，只有高频、短时、分散地练。同时每学一个点，问自己：它挂在我已知的哪个东西上？为什么是这样而不是那样？专家和新手的差别不在记了多少条，而在怎么组织。</p>
+        <p class="method-where"><b>在这个工作台里：</b>思维导图给你骨架，记忆包给你「为什么是这样」的来龙去脉，速查表让你不必背细节——把记忆外包出去，把理解留在脑子里。</p>
+      </article>
+    </div>
+
+    <p class="method-tension" style="margin-top:26px"><b>如果只记一个动作：</b>给自己定一个两周内要交出去的小东西，做它的过程中缺什么学什么；做完找人（或 AI）挑毛病，然后重做一遍。这一轮下来，比读十本书管用。</p>
+  </section>
+</main>
+
+<!-- 成就解锁提示 -->
+<div id="achievementToast" class="achievement-toast" hidden>
+  <div class="achievement-icon"></div>
+  <div class="achievement-info">
+    <div class="achievement-title"></div>
+    <div class="achievement-desc"></div>
+  </div>
+</div>
+
+<!-- 彩带效果容器 -->
+<canvas id="confetti" class="confetti-canvas"></canvas>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<script src="data-mindmap.js?v=20261107a"></script>
+<script src="data-content.js?v=20261107a"></script>
+<script src="data-memory.js?v=20261107a"></script>
+<script src="dashboard.js?v=20261107a"></script>
+<script src="enhancements.js?v=20261107a"></script>
+<script src="backup.js?v=20261107a"></script>
+<script src="app.js?v=20261107a"></script>
+<script src="pyexec.js?v=20261107a"></script>
+<script src="exercises-bank.js?v=20261107a"></script>
+<script src="exercises.js?v=20261107a"></script>
+<script src="review.js?v=20261107a"></script>
+<script src="method.js?v=20261107a"></script>
+<script src="fun.js?v=20261107a"></script>
+</body>
+</html>
